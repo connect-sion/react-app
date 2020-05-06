@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  frontend:
+    build: .
+    depends_on:
+      - icecast
+    ports:
+      - 4000:4000
+
+  icecast:
+    image: moul/icecast
+    environment:
+      - ICECAST_SOURCE_PASSWORD=test
+      - ICECAST_ADMIN_PASSWORD=test
+      - ICECAST_PASSWORD=test
+      - ICECAST_RELAY_PASSWORD=test
+    ports:
+      - 8000:8000
+
