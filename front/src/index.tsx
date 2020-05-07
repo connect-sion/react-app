@@ -4,9 +4,20 @@ import "./index.css";
 import VideoPlayer from "./VideoPlayer";
 import * as serviceWorker from "./serviceWorker";
 
+const videoJsOptions = {
+  autoplay: true,
+  controls: true,
+  sources: [
+    {
+      src: "/path/to/video.mp4",
+      type: "video/mp4",
+    },
+  ],
+};
+
 ReactDOM.render(
   <React.StrictMode>
-    <VideoPlayer />
+    <VideoPlayer {...videoJsOptions} />
   </React.StrictMode>,
   document.getElementById("root")
 );

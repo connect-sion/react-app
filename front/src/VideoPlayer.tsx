@@ -1,34 +1,26 @@
-import React, { useRef } from "react";
-import videojs from "video.js";
+import React, { useEffect, useRef } from "react";
+import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 
-export default class VideoPlayer extends React.Component {
-  componentDidMount() {
-    // instantiate Video.js
-    this.player = videojs(this.videoNode, this.props, function onPlayerReady() {
-      console.log("onPlayerReady", this);
-    });
-  }
+const VideoPlayer = (props: VideoJsPlayerOptions) => {
+  const videoNode = useRef(null);
+  let player: VideoJsPlayer | null = null;
 
-  // destroy player on unmount
-  componentWillUnmount() {
-    if (this.player) {
-      this.player.dispose();
-    }
-  }
+  useEffect(() => {
+    player = videojs(videoNode, props, () => console.log("onPlayerReady"));
+    return () => {
+      if (player) {
+        player.dispose();
+      }
+    };
+  });
 
-  // wrap the player in a div with a `data-vjs-player` attribute
-  // so videojs won't create additional wrapper in the DOM
-  // see https://github.com/videojs/video.js/pull/3856
-  render() {
-    return (
-      <div>
-        <div data-vjs-player>
-          <video
-            ref={(node) => (this.videoNode = node)}
-            className="video-js"
-          ></video>
-        </div>
+  return (
+    <div>
+      <div data-vjs-player>
+        <video ref={videoNode} className="video-js"></video>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default VideoPlayer;
