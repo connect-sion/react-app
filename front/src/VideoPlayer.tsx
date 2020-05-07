@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "video.js/dist/video-js.css";
 
 const VideoPlayer = (props: VideoJsPlayerOptions) => {
   const videoNode = useRef(null);
-  let player: VideoJsPlayer | null = null;
 
   useEffect(() => {
-    player = videojs(videoNode, props, () => console.log("onPlayerReady"));
+    let player: VideoJsPlayer | null = videojs("video-node", props, () =>
+      console.log("onPlayerReady")
+    );
     return () => {
       if (player) {
         player.dispose();
@@ -17,7 +19,7 @@ const VideoPlayer = (props: VideoJsPlayerOptions) => {
   return (
     <div>
       <div data-vjs-player>
-        <video ref={videoNode} className="video-js"></video>
+        <video id="video-node" ref={videoNode} className="video-js"></video>
       </div>
     </div>
   );
