@@ -5,7 +5,11 @@ services:
     depends_on:
       - server
     ports:
-      - 80:80
+      - 4000:80
+    environment:
+      - REACT_APP_HOST=server
+      - REACT_APP_PORT=8080
+      - REACT_APP_STREAM=test
 
   server:
     build: ./server
