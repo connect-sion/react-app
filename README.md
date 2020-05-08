@@ -1,31 +1,48 @@
 # connect-sion
 
-[![NPM version][npm-image]][npm-url]
-[![build status][ci-image]][ci-url]
-[![npm download][download-image]][download-url]
+Aplicación multicanal para realizar interpretaciones en la IDMJI. .
 
-aplicación multicanal para realizar interpretaciones en la IDMJI. .
+## Requirements
 
-## Installation
-
-`$ npm i connect-sion`
+- Docker
+- Docker composer
+- OBS
+- VLS (for debugging streaming connection)
+- npm (for debugging frontend)
 
 ## Usage
 
-```js
-import { myModule } from 'connect-sion';
+### Debugging
 
-const result = myModule(args);
-// result is ...
+1. Run streaming server
+
+```bash
+docker-compose up --build server
 ```
+
+2. Start OBS streaming with custom stream to `rtmp://localhost/stream` and
+   stream key `test` (this actually can be any value, but should match with
+   `REACT_APP_STREAM` for the frontend)
+
+![OBS configuration](./docs/obs_config.png)
+
+3. Run frontend server
+
+```bash
+cd frontend
+npm start
+```
+
+### General deployment
+
+Run front and servers with docker-compose
+
+```bash
+docker-compose up --build
+```
+
+Check the OBS configuration described in the debugging section
 
 ## License
 
 [MIT](./LICENSE)
-
-[npm-image]: https://img.shields.io/npm/v/connect-sion.svg
-[npm-url]: https://www.npmjs.com/package/connect-sion
-[ci-image]: https://github.com/maasencioh/connect-sion/workflows/Node.js%20CI/badge.svg?branch=master
-[ci-url]: https://github.com/maasencioh/connect-sion/actions?query=workflow%3A%22Node.js+CI%22
-[download-image]: https://img.shields.io/npm/dm/connect-sion.svg
-[download-url]: https://www.npmjs.com/package/connect-sion
