@@ -1,29 +1,62 @@
-import React, { useState } from "react";
+import React, { useRef, useEffect } from 'react';
+import io from 'socket.io-client';
 
-import VideoPlayer from "./VideoPlayer";
-
-const host = process.env.REACT_APP_HOST || "localhost";
-const port = process.env.REACT_APP_PORT || "8080";
-const stream = process.env.REACT_APP_STREAM || "test";
+const host = process.env.REACT_APP_HOST || 'localhost';
+const port = process.env.REACT_APP_PORT || '8080';
 
 const App = () => {
-  const [error, setError] = useState(false);
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    sources: [
-      {
-        src: `http://${host}:${port}/live/${stream}.m3u8`,
-        type: "application/x-mpegURL",
-      },
-    ],
-    onError: (mediaError: boolean) => setError(mediaError),
-  };
+  const audio = useRef<HTMLAudioElement>(null);
+  const socket = io(`http://${host}:${port}`);
+  const config = { iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] };
+
+  useEffect(() => {
+    let peerConnection: RTCPeerConnection;
+    socket.on('offer', (id: string, description: RTCSessionDescriptionInit) => {
+      peerConnection = new RTCPeerConnection(config);
+      peerConnection
+        .setRemoteDescription(description)
+        .then(() => peerConnection.createAnswer())
+        .then((sdp) => peerConnection.setLocalDescription(sdp))
+        .then(() => {
+          socket.emit('answer', id, peerConnection.localDescription);
+        })
+        .catch(console.error);
+      peerConnection.ontrack = (event) => {
+        console.log('Incoming stream');
+        if (audio?.current) audio.current.srcObject = event.streams[0];
+      };
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('candidate', id, event.candidate);
+        }
+      };
+    });
+
+    socket.on('candidate', (id: string, candidate: RTCIceCandidateInit) => {
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(candidate))
+        .catch((e) => console.error(e));
+    });
+
+    socket.on('connect', () => {
+      socket.emit('watcher');
+    });
+
+    socket.on('broadcaster', () => {
+      socket.emit('watcher');
+    });
+
+    socket.on('disconnectPeer', () => {
+      peerConnection.close();
+    });
+    return () => {
+      socket.close();
+    };
+  });
 
   return (
     <div>
-      <VideoPlayer {...videoJsOptions} />
-      {error && <span>El recurso aún no está disponible</span>}
+      <audio ref={audio}></audio>
     </div>
   );
 };
