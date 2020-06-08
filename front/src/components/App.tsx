@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import io from 'socket.io-client';
+import Layout from './Layout';
 
 const host = process.env.REACT_APP_HOST || 'localhost';
 const port = process.env.REACT_APP_PORT || '8080';
@@ -33,9 +34,11 @@ const App = () => {
     });
 
     socket.on('candidate', (id: string, candidate: RTCIceCandidateInit) => {
-      peerConnection
-        .addIceCandidate(new RTCIceCandidate(candidate))
-        .catch((e) => console.error(e));
+      if (peerConnection.remoteDescription) {
+        peerConnection
+          .addIceCandidate(new RTCIceCandidate(candidate))
+          .catch((e) => console.error(e));
+      }
     });
 
     socket.on('connect', () => {
@@ -55,9 +58,9 @@ const App = () => {
   });
 
   return (
-    <div>
-      <audio ref={audio}></audio>
-    </div>
+    <Layout>
+      <audio controls ref={audio}></audio>
+    </Layout>
   );
 };
 
