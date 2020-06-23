@@ -1,54 +1,71 @@
 import React, { useRef } from 'react';
 import io from 'socket.io-client';
-import Peer from 'simple-peer';
 import Layout from './Layout';
+
+interface CandidateEvent {
+  label: number | null;
+  candidate: string;
+}
 
 const host = process.env.REACT_APP_HOST || 'localhost';
 const port = process.env.REACT_APP_PORT || '8080';
 
-interface Signal {
-  peerId: string;
-  signal: any;
-}
+const iceServers = {
+  iceServers: [
+    { urls: 'stun:stun.services.mozilla.com' },
+    { urls: 'stun:stun.l.google.com:19302' },
+  ],
+};
 
 const App = () => {
   const audio = useRef<HTMLAudioElement>(null);
   const socket = io(`http://${host}:${port}`);
 
-  let peer = new Peer({ initiator: true });
-  socket.on('connect', () => {
-    console.log(socket.id);
-    socket.emit('peer', { peerId: socket.id });
+  socket.emit('viewer');
+  let rtcBroadcaster: RTCPeerConnection;
+
+  socket.on('offer', function (
+    broadcaster: string,
+    sdp: RTCSessionDescriptionInit,
+  ) {
+    console.log('setting broadcaster', broadcaster);
+    rtcBroadcaster = new RTCPeerConnection(iceServers);
+    rtcBroadcaster.setRemoteDescription(sdp);
+    rtcBroadcaster.createAnswer().then((sessionDescription) => {
+      rtcBroadcaster.setLocalDescription(sessionDescription);
+      socket.emit('answer', { type: 'answer', sdp: sessionDescription });
+    });
+    rtcBroadcaster.ontrack = (event) => {
+      if (audio?.current) audio.current.srcObject = event.streams[0];
+    };
+
+    rtcBroadcaster.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log('sending ice candidate');
+        socket.emit('candidate', broadcaster, {
+          type: 'candidate',
+          label: event.candidate.sdpMLineIndex,
+          id: event.candidate.sdpMid,
+          candidate: event.candidate.candidate,
+        });
+      }
+    };
   });
 
-  peer.on('connect', () => console.log('connected'));
-
-  // peer signaling
-  socket.on('signal', (data: Signal) => {
-    if (data.peerId === socket.id) {
-      peer.signal(data.signal);
-    }
-  });
-  peer.on('signal', (signal) => {
-    socket.emit('signal', { signal, peerId: socket.id });
-  });
-
-  peer.on('error', (error) => {
-    console.error(error);
-  });
-
-  peer.on('stream', (stream) => {
-    console.log(stream);
-
-    if (audio.current) {
-      audio.current.srcObject = stream;
-      audio.current.play();
-    }
+  socket.on('candidate', function (
+    _: string,
+    { label, candidate }: CandidateEvent,
+  ) {
+    const iceCandidate = new RTCIceCandidate({
+      sdpMLineIndex: label,
+      candidate,
+    });
+    rtcBroadcaster.addIceCandidate(iceCandidate);
   });
 
   return (
     <Layout>
-      <audio controls ref={audio}></audio>
+      <audio controls ref={audio} autoPlay></audio>
     </Layout>
   );
 };
