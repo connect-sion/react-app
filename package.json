@@ -3,18 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.5.0",
-    "@testing-library/user-event": "^7.2.1",
-    "@types/jest": "^24.9.1",
-    "@types/node": "^12.12.38",
-    "@types/react": "^16.9.34",
-    "@types/react-dom": "^16.9.7",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": "~16.13.1",
+    "react-dom": "~16.13.1",
     "react-scripts": "3.4.1",
-    "typescript": "^3.7.5",
-    "video.js": "^7.7.5"
+    "socket.io-client": "~2.3.0",
+    "typescript": "~3.7.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -38,6 +31,13 @@
     ]
   },
   "devDependencies": {
-    "@types/video.js": "^7.3.8"
+    "@types/socket.io-client": "~1.4.33",
+    "@testing-library/jest-dom": "~4.2.4",
+    "@testing-library/react": "~9.5.0",
+    "@testing-library/user-event": "~7.2.1",
+    "@types/jest": "~24.9.1",
+    "@types/node": "~12.12.38",
+    "@types/react": "~16.9.34",
+    "@types/react-dom": "~16.9.7"
   }
 }
